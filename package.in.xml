@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>UMRT Localization Package</name>
+  <name>umrt-localization-ros</name>
   <version>@version_input@</version> <!-- Version number parsed from version file, replaced here by CMake -->
-  <description>umrt-localization-ros</description>
+  <description>UMRT ROS Package for localization.</description>
   <maintainer email="158010272+edcela@users.noreply.github.com">edcel</maintainer>
   <license>MPL-2.0</license>
 
