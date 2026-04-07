@@ -33,7 +33,7 @@ def generate_launch_description():
             'namespace': 'gps_front',
             'DEVICE_FAMILY': 'F9P',
             'DEVICE_SERIAL_STRING': 'GPSF', # Replace with actual serial
-            'frame_id': 'gps_top_link',
+            'frame_id': 'gps_front_link',
            # 'device': '/dev/serial/by-path/platform-xhci-hcd.2.auto-usb-0:1.4:1.0',
         }.items()
     )
