@@ -88,24 +88,28 @@ void GpsNode::processGps()
     // double mid_lon = (gps1_msg.longitude + gps2_msg.longitude) / 2.0;
     // double mid_alt = (gps1_msg.altitude + gps2_msg.altitude) / 2.0;
 
-    // Rover heading direction (GPS1 back → GPS2 front)
-    double dx_heading = (gps1_msg.longitude - gps2_msg.longitude) * cos(((gps2_msg.latitude + gps1_msg.latitude)/2.0) * M_PI / 180.0) * 111320.0;
+    // Rover heading direction (GPS2 back → GPS1 front)
+    double dx_heading = (gps1_msg.longitude - gps2_msg.longitude) * cos(((gps1_msg.latitude + gps2_msg.latitude) / 2.0) * M_PI / 180.0) * 111320.0;
     double dy_heading = (gps1_msg.latitude - gps2_msg.latitude) * 111320.0;
 
-    double heading_angle = 0;
+    double heading_angle = 0.0;
     std::string heading_dir = "N/A";
-    if (dx_heading != 0 || dy_heading != 0) {
+    if (dx_heading != 0 || dy_heading != 0)
+    {
+        // Standard compass heading: 0° = North, 90° = East
         heading_angle = atan2(dy_heading, dx_heading) * 180.0 / M_PI;
-        if (heading_angle < 0) heading_angle += 360.0;
 
-        if ((heading_angle >= 337.5 && heading_angle <= 360) || (heading_angle >= 0 && heading_angle < 22.5)) heading_dir = "E";
-        else if (heading_angle >= 22.5 && heading_angle < 67.5) heading_dir = "NE";
-        else if (heading_angle >= 67.5 && heading_angle < 112.5) heading_dir = "N";
-        else if (heading_angle >= 112.5 && heading_angle < 157.5) heading_dir = "NW";
-        else if (heading_angle >= 157.5 && heading_angle < 202.5) heading_dir = "W";
-        else if (heading_angle >= 202.5 && heading_angle < 247.5) heading_dir = "SW";
-        else if (heading_angle >= 247.5 && heading_angle < 292.5) heading_dir = "S";
-        else if (heading_angle >= 292.5 && heading_angle < 337.5) heading_dir = "SE";
+        if (heading_angle < 0)
+            heading_angle += 360.0;
+
+        if ((heading_angle >= 337.5 || heading_angle < 22.5)) heading_dir = "N";
+        else if (heading_angle < 67.5) heading_dir = "NE";
+        else if (heading_angle < 112.5) heading_dir = "E";
+        else if (heading_angle < 157.5) heading_dir = "SE";
+        else if (heading_angle < 202.5) heading_dir = "S";
+        else if (heading_angle < 247.5) heading_dir = "SW";
+        else if (heading_angle < 292.5) heading_dir = "W";
+        else if (heading_angle < 337.5) heading_dir = "NW";
     }
 
     // Prepare NavSatFix message
