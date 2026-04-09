@@ -6,11 +6,11 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    config = os.path.join(get_package_share_directory('project-name'),'launch', 'example.yaml')
+    config = os.path.join(get_package_share_directory('umrt-localization-ros'),'launch', 'example.yaml')
 
     example_node = Node(
-            package='project-name',
-            executable='project-name',
+            package='umrt-localization-ros',
+            executable='umrt-localization-ros',
             name = 'umrt_example_node',
             parameters=[config]
             )

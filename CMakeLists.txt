@@ -15,6 +15,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         rclcpp
         rclcpp_lifecycle
         ublox_dgnss
+        sensor_msgs
         )
 
 # find dependencies
@@ -23,18 +24,18 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-add_executable(${PROJECT_NAME}
+add_executable(gps_node
     src/heading.cpp
     src/heading_node.cpp
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_compile_features(gps_node PUBLIC cxx_std_17)
+target_include_directories(gps_node PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
         )
 ament_target_dependencies(
-        ${PROJECT_NAME} PUBLIC
+        gps_node PUBLIC
         ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
@@ -51,7 +52,7 @@ configure_file(
 
 # INSTALL
 install(TARGETS
-        ${PROJECT_NAME}
+        gps_node
         DESTINATION lib/${PROJECT_NAME}
         )
 

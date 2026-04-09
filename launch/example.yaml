@@ -1,3 +1,14 @@
 umrt_example_node:
   ros__parameters:
-    example_param: 0
+    gps1_topic: "/gps1/fix"
+    gps2_topic: "/gps2/fix"
+
+    # Topic where the combined GPS data will be published
+    combined_topic: "/combined/fix"
+
+    # Frame ID for the NavSatFix messages
+    frame_id: "map"
+
+    # Optional parameters
+    example_param: 0       # Your previous example param
+    publish_rate: 10       # Hz, how often to publish combined GPS data

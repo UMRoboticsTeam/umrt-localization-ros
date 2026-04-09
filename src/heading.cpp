@@ -3,12 +3,11 @@
 //
 
 #include <rclcpp/rclcpp.hpp>
-
-#include "project-name/example_node.hpp"
+#include "umrt-localization-ros/gps_node.hpp"
 
 int main(int argc, char* argv[]){
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ExampleNode>());
+    rclcpp::spin(std::make_shared<GpsNode>());
     rclcpp::shutdown();
     return 0;
 }
