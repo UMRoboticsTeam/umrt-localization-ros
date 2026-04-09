@@ -13,17 +13,20 @@
  */
 GpsNode::GpsNode() : Node("gps_node"), gps1_received(false), gps2_received(false){
 
+    rclcpp::QoS qos(10);
+    qos.best_effort();
+
     // Publisher: creates a topic "gps/fix" to publish fused GPS messages
     // 10 = size of the message queue. If messages come too fast, store up to 10 before dropping
-    fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", 10);    
+    fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", qos);
     
     // Subscriber for GPS1: listens to "/gps1/fix" topic
     // When a message arrives, gps1Callback() is called
-    gps1_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps1/fix", 10, std::bind(&GpsNode::gps1Callback, this, std::placeholders::_1));
+    gps1_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_front/fix", qos, std::bind(&GpsNode::gps1Callback, this, std::placeholders::_1));
 
     // Subscriber for GPS2: listens to "/gps2/fix" topic
     // When a message arrives, gps2Callback() is called
-    gps2_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps2/fix", 10,std::bind(&GpsNode::gps2Callback, this, std::placeholders::_1));
+    gps2_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_back/fix", qos, std::bind(&GpsNode::gps2Callback, this, std::placeholders::_1));
 
     // Log to console that the node has started
     RCLCPP_INFO(this->get_logger(), "Dual GPS node initialized.");
@@ -81,87 +84,39 @@ void GpsNode::processGps()
     gps_msg.header.frame_id = "gps";
 
     // Calculate midpoint for vehicle position
-    double mid_lat = (gps1_msg.latitude + gps2_msg.latitude) / 2.0;
-    double mid_lon = (gps1_msg.longitude + gps2_msg.longitude) / 2.0;
-    double mid_alt = (gps1_msg.altitude + gps2_msg.altitude) / 2.0;
+    // double mid_lat = (gps1_msg.latitude + gps2_msg.latitude) / 2.0;
+    // double mid_lon = (gps1_msg.longitude + gps2_msg.longitude) / 2.0;
+    // double mid_alt = (gps1_msg.altitude + gps2_msg.altitude) / 2.0;
 
-    // Rover facing direction (GPS1 back → GPS2 front)
-    double dx_facing = (gps2_msg.longitude - gps1_msg.longitude) * cos(((gps2_msg.latitude + gps1_msg.latitude)/2.0) * M_PI / 180.0) * 111320.0;
-    double dy_facing = (gps2_msg.latitude - gps1_msg.latitude) * 111320.0;
+    // Rover heading direction (GPS1 back → GPS2 front)
+    double dx_heading = (gps1_msg.longitude - gps2_msg.longitude) * cos(((gps2_msg.latitude + gps1_msg.latitude)/2.0) * M_PI / 180.0) * 111320.0;
+    double dy_heading = (gps1_msg.latitude - gps2_msg.latitude) * 111320.0;
 
-    std::string facing_dir = "N/A";
-    if (dx_facing != 0 || dy_facing != 0) {
-        double angle = atan2(dy_facing, dx_facing) * 180.0 / M_PI;
-        if (angle < 0) angle += 360.0;
+    double heading_angle = 0;
+    std::string heading_dir = "N/A";
+    if (dx_heading != 0 || dy_heading != 0) {
+        heading_angle = atan2(dy_heading, dx_heading) * 180.0 / M_PI;
+        if (heading_angle < 0) heading_angle += 360.0;
 
-        if ((angle >= 337.5 && angle <= 360) || (angle >= 0 && angle < 22.5)) facing_dir = "E";
-        else if (angle >= 22.5 && angle < 67.5) facing_dir = "NE";
-        else if (angle >= 67.5 && angle < 112.5) facing_dir = "N";
-        else if (angle >= 112.5 && angle < 157.5) facing_dir = "NW";
-        else if (angle >= 157.5 && angle < 202.5) facing_dir = "W";
-        else if (angle >= 202.5 && angle < 247.5) facing_dir = "SW";
-        else if (angle >= 247.5 && angle < 292.5) facing_dir = "S";
-        else if (angle >= 292.5 && angle < 337.5) facing_dir = "SE";
+        if ((heading_angle >= 337.5 && heading_angle <= 360) || (heading_angle >= 0 && heading_angle < 22.5)) heading_dir = "E";
+        else if (heading_angle >= 22.5 && heading_angle < 67.5) heading_dir = "NE";
+        else if (heading_angle >= 67.5 && heading_angle < 112.5) heading_dir = "N";
+        else if (heading_angle >= 112.5 && heading_angle < 157.5) heading_dir = "NW";
+        else if (heading_angle >= 157.5 && heading_angle < 202.5) heading_dir = "W";
+        else if (heading_angle >= 202.5 && heading_angle < 247.5) heading_dir = "SW";
+        else if (heading_angle >= 247.5 && heading_angle < 292.5) heading_dir = "S";
+        else if (heading_angle >= 292.5 && heading_angle < 337.5) heading_dir = "SE";
     }
-
-    std::string movement_dir = "N/A";
-    if (prev_gps_valid) {
-        // Convert latitude/longitude to radians for heading calculation
-        // GPS coordinates are usually in degrees, but math functions like cos() and atan2() use radians.
-        double prev_lat_rad = prev_gps_msg.latitude * M_PI / 180.0;
-        double curr_lat_rad = mid_lat * M_PI / 180.0;
-
-        /**
-         * Calculate differences in meters. Calculate how far apart the two GPS units are in the east (dx) and north (dy) directions.
-         * 1. dx is the East-West difference: 
-         * Multiply the difference with cos to to convert longitude difference into actual east-west meters, 
-         * accounting for the fact that the Earth is round and longitude lines get closer together near the poles.
-         * Multiply by 111320 to convert degrees to meters
-         * 
-         * 2. dy is the north-south difference:
-         * Calculate the difference and multiply by 111320 to convert degrees to meters
-         * 
-         * 3. Finally, calculate the difference in meters between previous and current midpoints
-         */
-        double dx_move = (mid_lon - prev_gps_msg.longitude) * cos((prev_lat_rad + curr_lat_rad)/2.0) * 111320.0;
-        double dy_move = (mid_lat - prev_gps_msg.latitude) * 111320.0;
-
-        /**
-         * Returns the angle (in radians) from the x-axis (east) to the y-axis (north)
-         * For example, if GPS1 is directly in front of GPS2, then the angle is 90 deg, east is 0 deg, west is 180 deg, south is 270 deg. 
-         * If angle is negative (e.g., -90), add 360° → becomes 270. This is South.
-         */
-        // Movement angle in degrees (0 = East, 90 = North)
-        if (dx_move != 0 || dy_move != 0) {
-            double angle = atan2(dy_move, dx_move) * 180.0 / M_PI;
-            if (angle < 0) angle += 360.0;
-
-            if ((angle >= 337.5 && angle <= 360) || (angle >= 0 && angle < 22.5)) movement_dir = "E";
-            else if (angle >= 22.5 && angle < 67.5) movement_dir = "NE";
-            else if (angle >= 67.5 && angle < 112.5) movement_dir = "N";
-            else if (angle >= 112.5 && angle < 157.5) movement_dir = "NW";
-            else if (angle >= 157.5 && angle < 202.5) movement_dir = "W";
-            else if (angle >= 202.5 && angle < 247.5) movement_dir = "SW";
-            else if (angle >= 247.5 && angle < 292.5) movement_dir = "S";
-            else if (angle >= 292.5 && angle < 337.5) movement_dir = "SE";
-        }
-    }
-
-    // Update previous Position
-    prev_gps_msg.latitude  = mid_lat;
-    prev_gps_msg.longitude = mid_lon;
-    prev_gps_msg.altitude  = mid_alt;
-    prev_gps_valid = true;
 
     // Prepare NavSatFix message
-    gps_msg.latitude  = mid_lat;
-    gps_msg.longitude = mid_lon;
-    gps_msg.altitude  = mid_alt;
+    // gps_msg.latitude  = mid_lat;
+    // gps_msg.longitude = mid_lon;
+    // gps_msg.altitude  = mid_alt;
     gps_msg.status    = gps1_msg.status;  // copy status from GPS1
 
     // Publish GPS midpoint
     fix_pub_->publish(gps_msg);
 
-    // --- Log both heading and movement ---
-    RCLCPP_INFO(this->get_logger(), "Lat: %.7f, Lon: %.7f, Alt: %.2f, Facing: %s, Moving: %s", mid_lat, mid_lon, mid_alt, facing_dir.c_str(), movement_dir.c_str());
+    // Output
+    RCLCPP_INFO(this->get_logger(), "Heading Direction: %s, Heading Angle: %.2f", heading_dir.c_str(), heading_angle);
 }

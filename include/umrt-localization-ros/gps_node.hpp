@@ -28,10 +28,6 @@ private:
     // Ensures both gps are producing an output before processing
     bool gps1_received;
     bool gps2_received;
-    bool prev_gps_valid;               // tracks if previous GPS is valid
-
-    // Store previous fused midpoint
-    sensor_msgs::msg::NavSatFix prev_gps_msg;  // stores previous fused GPS midpoint
 
     // Callbacks: Runs automatically when a message arrives
     void gps1Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
