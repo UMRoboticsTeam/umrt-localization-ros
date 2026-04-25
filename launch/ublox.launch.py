@@ -12,6 +12,7 @@ def generate_launch_description():
   device_family = LaunchConfiguration("device_family")
   device_serial_string = LaunchConfiguration('device_serial_string')
   frame_id = LaunchConfiguration('frame_id')
+  
 
   log_level_arg = DeclareLaunchArgument(
     "log_level", default_value=TextSubstitution(text="INFO")
