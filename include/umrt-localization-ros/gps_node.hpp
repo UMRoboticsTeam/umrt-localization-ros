@@ -15,25 +15,25 @@ public:
 private:
 
     // Publisher: Sends messages to a topic. Other nodes can subscribe to it
-    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr fix_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr fix_pub;
 
-    // Subscriber: Listens to a topic (like /gps1/fix). Receives messages when published.
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gps1_sub_;
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gps2_sub_;
+    // Subscriber: Listens to a topic (like /gps_left/fix). Receives messages when published.
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gpsLeft_sub;
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gpsRight_sub;
 
     // Stores the latest GPS data
-    sensor_msgs::msg::NavSatFix gps1_msg;
-    sensor_msgs::msg::NavSatFix gps2_msg;
+    sensor_msgs::msg::NavSatFix gpsLeft_msg;
+    sensor_msgs::msg::NavSatFix gpsRight_msg;
 
     // Ensures both gps are producing an output before processing
-    bool gps1_received;
-    bool gps2_received;
+    bool gpsLeft_active;
+    bool gpsRight_active;
 
-    // Callbacks: Runs automatically when a message arrives
-    void gps1Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
-    void gps2Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+    // Stores the latest message automatically.
+    void gpsLeftLatestMsg(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+    void gpsRightLatestMsg(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
 
-    // Combines both gps readings
+    // Process the message and give output
     void processGps();
 
     bool gpsDataAvailable() const;

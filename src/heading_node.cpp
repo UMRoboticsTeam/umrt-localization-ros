@@ -9,52 +9,50 @@
  * Initializes node name
  * Initializes flags for message reception
  * Creates publisher for fused GPS
- * Creates subscriptions for GPS1 and GPS2
+ * Creates subscriptions for gps left and right 
  */
-GpsNode::GpsNode() : Node("gps_node"), gps1_received(false), gps2_received(false){
+GpsNode::GpsNode() : Node("gps_node"), gpsLeft_active(false), gpsRight_active(false){
 
     rclcpp::QoS qos(10);
     qos.best_effort();
 
     // Publisher: creates a topic "gps/fix" to publish fused GPS messages
     // 10 = size of the message queue. If messages come too fast, store up to 10 before dropping
-    fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", qos);
+    fix_pub = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", qos);
     
-    // Subscriber for GPS1: listens to "/gps1/fix" topic
-    // When a message arrives, gps1Callback() is called
-    gps1_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_front/fix", qos, std::bind(&GpsNode::gps1Callback, this, std::placeholders::_1));
+    // Subscriber for gpsLeft: listens to "/gps_left/fix" topic
+    // When a message arrives, gpsLeftLatestMsg() is called
+    gpsLeft_sub = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_left/fix", qos, std::bind(&GpsNode::gpsLeftLatestMsg, this, std::placeholders::_1));
 
-    // Subscriber for GPS2: listens to "/gps2/fix" topic
-    // When a message arrives, gps2Callback() is called
-    gps2_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_back/fix", qos, std::bind(&GpsNode::gps2Callback, this, std::placeholders::_1));
+    // Subscriber for gpsRight: listens to "/gps_right/fix" topic
+    // When a message arrives, gpsRightLatestMsg() is called
+    gpsRight_sub = this->create_subscription<sensor_msgs::msg::NavSatFix>("/gps_right/fix", qos, std::bind(&GpsNode::gpsRightLatestMsg, this, std::placeholders::_1));
 
     // Log to console that the node has started
     RCLCPP_INFO(this->get_logger(), "Dual GPS node initialized.");
 }
 
 /**
- * Callback for GPS1
- * Stores the latest GPS1 message
- * Sets gps1_received_ to true
+ * Stores the latest message for GPS on the left
+ * Sets gpsLeft_active to true
  * Calls processGps() to attempt fusion
  */
-void GpsNode::gps1Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
+void GpsNode::gpsLeftLatestMsg(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
 {
-    gps1_msg = *msg;
-    gps1_received = true;
+    gpsLeft_msg = *msg;
+    gpsLeft_active = true;
     processGps();
 }
 
 /**
- * Callback for GPS2
- * Stores the latest GPS2 message
- * Sets gps2_received_ to true
+ * Stores the latest message for GPS on the right
+ * Sets gpsRight_active to true
  * Calls processGps() to attempt fusion
  */
-void GpsNode::gps2Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
+void GpsNode::gpsRightLatestMsg(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
 {
-    gps2_msg = *msg;
-    gps2_received = true;
+    gpsRight_msg = *msg;
+    gpsRight_active = true;
     processGps();
 }
 
@@ -63,13 +61,13 @@ void GpsNode::gps2Callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
  */
 bool GpsNode::gpsDataAvailable() const
 {
-    return gps1_received && gps2_received;
+    return gpsLeft_active && gpsRight_active;
 }
 
 /**
  * Fuse GPS messages
  * Checks if both GPS messages are available
- * Averages latitude, longitude, and altitude
+ * Get the rover heading in degrees and compass direction
  * Publishes fused message
  */
 void GpsNode::processGps()
@@ -83,21 +81,19 @@ void GpsNode::processGps()
     gps_msg.header.stamp = this->now();
     gps_msg.header.frame_id = "gps";
 
-    // Calculate midpoint for vehicle position
-    // double mid_lat = (gps1_msg.latitude + gps2_msg.latitude) / 2.0;
-    // double mid_lon = (gps1_msg.longitude + gps2_msg.longitude) / 2.0;
-    // double mid_alt = (gps1_msg.altitude + gps2_msg.altitude) / 2.0;
-
-    // Rover heading direction (GPS2 back → GPS1 front)
-    double dx_heading = (gps1_msg.longitude - gps2_msg.longitude) * cos(((gps1_msg.latitude + gps2_msg.latitude) / 2.0) * M_PI / 180.0) * 111320.0;
-    double dy_heading = (gps1_msg.latitude - gps2_msg.latitude) * 111320.0;
-
+    // Calculate difference between left and right GPS in meters
+    // dx = east-west movement, dy = north-south movement
+    // This gives the sideways direction of the rover
+    double dx = (gpsRight_msg.longitude - gpsLeft_msg.longitude) * cos(((gpsRight_msg.latitude + gpsLeft_msg.latitude) / 2.0) * M_PI / 180.0) * 111320.0;
+    double dy = (gpsRight_msg.latitude - gpsLeft_msg.latitude) * 111320.0;
     double heading_angle = 0.0;
     std::string heading_dir = "N/A";
-    if (dx_heading != 0 || dy_heading != 0)
+    if (dx != 0 || dy != 0)
     {
-        // Standard compass heading: 0° = North, 90° = East
-        heading_angle = atan2(dy_heading, dx_heading) * 180.0 / M_PI;
+        // atan2 gives angle where 0° is East
+        // Subtract 90° to convert it so 0° is North (just like a compass)
+        heading_angle = atan2(dy, dx) * 180.0 / M_PI;
+        heading_angle -= 90.0;
 
         if (heading_angle < 0)
             heading_angle += 360.0;
@@ -113,13 +109,10 @@ void GpsNode::processGps()
     }
 
     // Prepare NavSatFix message
-    // gps_msg.latitude  = mid_lat;
-    // gps_msg.longitude = mid_lon;
-    // gps_msg.altitude  = mid_alt;
-    gps_msg.status    = gps1_msg.status;  // copy status from GPS1
+    gps_msg.status    = gpsLeft_msg.status;  // copy status from the left GPS
 
     // Publish GPS midpoint
-    fix_pub_->publish(gps_msg);
+    fix_pub->publish(gps_msg);
 
     // Output
     RCLCPP_INFO(this->get_logger(), "Heading Direction: %s, Heading Angle: %.2f", heading_dir.c_str(), heading_angle);
