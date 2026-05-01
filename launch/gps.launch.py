@@ -49,17 +49,12 @@ def generate_launch_description():
         }.items()
     )
 
-    gps_2_delayed = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=gps_1,
-            on_start=[
-                LogInfo(msg='GPS_LEFT started. Waiting 5s for USB to claim before starting GPS_RIGHT...'),
-                TimerAction(
-                    period=5.0,
-                    actions=[gps_2],
-                )
-            ]
-        )
+    gps_2_delayed = TimerAction(
+        period=5.0,
+        actions=[
+            LogInfo(msg='GPS_LEFT started. Waiting 5s for USB to claim before starting GPS_RIGHT...'),
+            gps_2
+        ]
     )
     
     return LaunchDescription([

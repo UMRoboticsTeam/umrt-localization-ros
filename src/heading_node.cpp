@@ -90,10 +90,13 @@ void GpsNode::processGps()
     std::string heading_dir = "N/A";
     if (dx != 0 || dy != 0)
     {
-        // atan2 gives angle where 0° is East
-        // Subtract 90° to convert it so 0° is North (just like a compass)
-        heading_angle = atan2(dy, dx) * 180.0 / M_PI;
-        heading_angle -= 90.0;
+
+        // For a left/right antenna setup, the forward direction is perpendicular to the baseline.
+        double forward_x = -dy;
+        double forward_y = dx;
+
+        // atan2(x, y) here gives: 0° = North, 90° = East, 180° = South, 270° = West
+        heading_angle = atan2(forward_x, forward_y) * 180.0 / M_PI;
 
         if (heading_angle < 0)
             heading_angle += 360.0;
