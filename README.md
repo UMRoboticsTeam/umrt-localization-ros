@@ -37,14 +37,14 @@ The antennas are mounted left and right on the rover, connected to their respect
 
 **Header Files and Heading calculation**
 The header file, gps_node.hpp defines:
-  *Publishers: Sends messages to a topic. Other nodes can subscribe to it.
-  *Subscribers: Listens to a topic. Receives messages when published.
-  *Some variables and functions: Store and process the GPS data.
+* Publishers: Sends messages to a topic. Other nodes can subscribe to it.
+* Subscribers: Listens to a topic. Receives messages when published.
+* Some variables and functions: Store and process the GPS data.
 
 The heading_node.cpp file uses the header file to:
-  *Initialize publisher, subscriber, variables and functions
-  *Wait until the GPS actually receives data to start processing it.
-  *Use the latitude and longitude positions of both GPS to calculate the heading.
+* Initialize publisher, subscriber, variables and functions
+* Wait until the GPS actually receives data to start processing it.
+* Use the latitude and longitude positions of both GPS to calculate the heading.
 
 **Heading Estimation**
 First, use the latitude and longitude coordinates to calculate the difference between left and right GPS in meters. Since the gps is mounted on the left and right of the rover, its forward is perpendicular to the baseline. Thus, we rotate the vector 90° to make the rover point forward:
@@ -61,11 +61,11 @@ Then, compare this angle to the angle from a compass to get the heading directio
 **Node**
 The *gps_node* created in the heading_node.cpp file, is the only node created in this package to take in the coordinates from the 2 GPS receivers and publish an output.
 
-Topics
+**Topics**
 There are 3 main topics:
-  */gps_left/fix : This collects and processes the GPS coordinates from the left GPS.
-  */gps_right/fix : This collects and processes the GPS coordinates from the right GPS.
-  *gps/fix : This publishes the combined GPS data.
+* /gps_left/fix : This collects and processes the GPS coordinates from the left GPS.
+* /gps_right/fix : This collects and processes the GPS coordinates from the right GPS.
+* gps/fix : This publishes the combined GPS data.
   
 Steps to run the package:
 | Terminal Steps | Details | Example Command |
@@ -88,9 +88,10 @@ Steps to run the package:
 |  | Click on the dot, and then on the taskbar on the left select topic, and then choose /fix |  |
 
 **Overview on Launch File:**
-Overview: The launch file distinguishes the 2 gps via their serial string, which we were able to modify with ublox’s software U-center.
+The launch file distinguishes the 2 gps via their serial string, which we were able to modify with ublox’s software U-center.
 
-Once the launch file is ran, our 2 ublox dgnss nodes are created, and they will then output a nav-sat fix, which the heading node (gps_node) will use to calculate a bearing.
-<img width="851" height="521" alt="finalfinal" src="https://github.com/user-attachments/assets/6d3d0070-2301-4364-9069-d047d2899d77" />
+Once the launch file is ran, our 2 ublox dgnss nodes are created, and they will then output a nav-sat fix, which the heading node (gps_node) will use to calculate a bearing. Below is a diagram to illustrate the process.
+<img width="851" height="521" alt="finalfinalfinal drawio" src="https://github.com/user-attachments/assets/39a0ff3c-babb-465c-b657-6ee1f31d4a47" />
+
 
 [See the documentation](https://umroboticsteam.github.io/********** project-name **********/)
