@@ -1,22 +1,3 @@
-# UMRT ROS Template
-ROS project repository template for the University of Manitoba Robotics Team.
-
-New projects should be **forked** from this repo (not using this as a template, as that prevents template changes from
-trickling down). Each new project must:
-1. Fill in missing fields in package.in.xml
-2. Fill in project name in CMakeLists.txt and Doxyfile
-3. Go into `umrt-build` package settings and give the new repo read permission
-4. Go into `umrt-apt-image` package settings and give the new repo read permission
-5. Go into `UMRoboticsTeam` organisation secrets and add the new repo to:
-   - `APT_DEPLOY_KEY`
-   - `APT_SIGNING_KEY`
-6. Copy the rulesets (branch protection rules) from a mature repository like
-   [umrt-arm-firmware-lib](https://github.com/UMRoboticsTeam/umrt-arm-firmware-lib/)
-7. Remove this notice and fill in below README template
-8. Write something in mainpage.dox
-9. Replace example files with real code, add source files to CMake targets, document it with Doxygen, and proceed
-
----
 # Heading 
 
 This project implements heading for the University of Manitoba Robotics Team's 
@@ -80,8 +61,8 @@ Steps to run the package:
 |  | (New terminal) Connect the container to this new terminal using: | `docker exec -it gpsImage bash` |
 |  | Run the node | `ros2 run umrt-localization-ros gps_node` |
 |  | (New Terminal) Connect one terminal’s container to another terminal | `ros2 topic echo /gps/fix` |
-| **In Foxglove** | Run the topic | `ros2 topic echo /gps/fix` |
-|  | Go to Dashboard |  |
+|  | Run the topic | `ros2 topic echo /gps/fix` |
+| **In Foxglove** | Go to Dashboard |  |
 |  | Click on open connection |  |
 |  | On the pop-up window, select rosbridge |  |
 |  | Click on open |  |
