@@ -1,9 +1,5 @@
 """
-UMRT Robot Launch File
-
-TO-DO:
-- Work on QoS Profile for all cameras
-- Define Launch Arguments for Cameras to keep a persistent way of getting /dev/video
+UMRT Gps launch file
 """
 
 """
@@ -50,10 +46,10 @@ def generate_launch_description():
     )
 
     gps_2_delayed = TimerAction(
-        period=5.0,
-        actions=[
-            LogInfo(msg='GPS_LEFT started. Waiting 5s for USB to claim before starting GPS_RIGHT...'),
-            gps_2
+        period = 5.0,
+        actions = [
+              LogInfo(msg='GPS_LEFT started. Waiting 5s for USB to claim before starting GPS_RIGHT...'),
+              gps_2
         ]
     )
     
