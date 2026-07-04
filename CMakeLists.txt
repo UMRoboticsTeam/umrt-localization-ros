@@ -19,6 +19,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         )
 
 # find dependencies
+find_package(ublox_ubx_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
@@ -34,9 +35,10 @@ target_include_directories(gps_node PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
         )
-ament_target_dependencies(
-        gps_node PUBLIC
-        ${THIS_PACKAGE_INCLUDE_DEPENDS}
+ament_target_dependencies(gps_node
+    rclcpp
+    sensor_msgs
+    ublox_ubx_msgs
 )
 
 # Parse version number from the file
