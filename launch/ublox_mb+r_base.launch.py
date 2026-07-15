@@ -49,7 +49,7 @@ def generate_launch_description():
             {'CFG_UART1OUTPROT_UBX': False},
 
             # set UART2 baud rate to 460800
-            {'CFG-UART2-BAUDRATE': 0x70800},
+            {'CFG_UART2_BAUDRATE': 0x70800},
             
 
             # send RTCM messages only (to rover) on UART2
