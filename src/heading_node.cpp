@@ -98,7 +98,7 @@ void GpsNode::relposCallback(
     // Set this to your measured antenna-to-antenna distance in meters.
     // If the RTK length disagrees, the ambiguities fixed wrongly and the
     // heading is garbage (see u-blox app note UBX-19009093, section 2.4).
-    constexpr double kExpectedBaselineM = 1.0;   // <-- EDIT to your robot
+    constexpr double kExpectedBaselineM = 0.3;   // <-- EDIT to your robot
     constexpr double kBaselineToleranceM = 0.05;  // +/- 5 cm
 
     const double baseline_len = std::sqrt(rel_n * rel_n + rel_e * rel_e);

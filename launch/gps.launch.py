@@ -33,7 +33,7 @@ def generate_launch_description():
         launch_arguments={
             'namespace': 'gps_left',
             'device_family': 'F9P',
-            'device_serial_string': 'GPSF',  # left/base receiver serial
+            'device_serial_string': 'GPSP',  # left/base receiver serial
             'frame_id': 'gps_left_link',
         }.items()
     )
