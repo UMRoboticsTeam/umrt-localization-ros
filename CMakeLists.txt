@@ -25,17 +25,17 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-add_executable(gps_node
-    src/heading.cpp
+add_executable(heading_node
+    src/heading_main.cpp
     src/heading_node.cpp
 )
 
-target_compile_features(gps_node PUBLIC cxx_std_17)
-target_include_directories(gps_node PUBLIC
+target_compile_features(heading_node PUBLIC cxx_std_17)
+target_include_directories(heading_node PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
         )
-ament_target_dependencies(gps_node
+ament_target_dependencies(heading_node
     rclcpp
     sensor_msgs
     ublox_ubx_msgs
@@ -54,12 +54,17 @@ configure_file(
 
 # INSTALL
 install(TARGETS
-        gps_node
+        heading_node
         DESTINATION lib/${PROJECT_NAME}
         )
 
 install(
         DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}/
+)
+
+install(
+        DIRECTORY config
         DESTINATION share/${PROJECT_NAME}/
 )
 

@@ -1,0 +1,13 @@
+# This file holds launch arguments that used to be hardcoded directly inside gps.launch.py. Edit values here (e.g. serial strings) without touching any Python code.
+
+gps_port:
+  namespace: gps_port
+  device_family: F9P
+  device_serial_string: GPSP
+  frame_id: gps_port_link
+
+gps_starboard:
+  namespace: gps_starboard
+  device_family: F9P
+  device_serial_string: GPSB
+  frame_id: gps_starboard_link

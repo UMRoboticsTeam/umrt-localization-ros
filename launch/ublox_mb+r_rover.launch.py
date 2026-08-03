@@ -17,6 +17,9 @@ def generate_launch_description():
   log_level_arg = DeclareLaunchArgument(
     "log_level", default_value=TextSubstitution(text="INFO")
   )
+  namespace_arg = DeclareLaunchArgument(
+    "namespace", default_value="rover"
+  )
   device_family_arg = DeclareLaunchArgument(
     "device_family", default_value=TextSubstitution(text="F9P")
   )
@@ -90,7 +93,7 @@ def generate_launch_description():
         package='ublox_dgnss_node',
         plugin='ublox_dgnss::UbloxDGNSSNode',
         name='ublox_dgnss',
-        namespace='rover',
+        namespace=namespace,
         parameters=params_rover
       )
     ]
@@ -106,7 +109,7 @@ def generate_launch_description():
       ComposableNode(
         package='ublox_nav_sat_fix_hp_node',
         plugin='ublox_nav_sat_fix_hp::UbloxNavSatHpFixNode',
-        namespace='rover',
+        namespace=namespace,
         name='ublox_nav_sat_fix_hp'
       )
     ]
@@ -114,8 +117,10 @@ def generate_launch_description():
 
   return launch.LaunchDescription([
     log_level_arg,
+    namespace_arg,
     device_family_arg,
     device_serial_string_arg,
+    frame_id_arg,
     container_rover,
     container_navsatfix,
     ])

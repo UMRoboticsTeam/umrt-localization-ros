@@ -20,6 +20,9 @@ def generate_launch_description():
   device_family_arg = DeclareLaunchArgument(
     "device_family", default_value=TextSubstitution(text="F9P")
   )
+  namespace_arg = DeclareLaunchArgument(
+    "namespace", default_value="base"
+  )
   device_serial_string_arg = DeclareLaunchArgument(
     "device_serial_string",
     default_value="",
@@ -95,7 +98,7 @@ def generate_launch_description():
         package='ublox_dgnss_node',
         plugin='ublox_dgnss::UbloxDGNSSNode',
         name='ublox_dgnss',
-        namespace='base',
+        namespace=namespace,
         parameters=params_base
       )
     ]
@@ -111,7 +114,7 @@ def generate_launch_description():
       ComposableNode(
         package='ublox_nav_sat_fix_hp_node',
         plugin='ublox_nav_sat_fix_hp::UbloxNavSatHpFixNode',
-        namespace='base',
+        namespace=namespace,
         name='ublox_nav_sat_fix_hp'
       )
     ]
@@ -119,8 +122,10 @@ def generate_launch_description():
 
   return launch.LaunchDescription([
     log_level_arg,
+    namespace_arg,
     device_family_arg,
     device_serial_string_arg,
+    frame_id_arg,
     container_base,
     container_navsatfix,
     ])
