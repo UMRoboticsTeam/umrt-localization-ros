@@ -1,0 +1,22 @@
+# Copyright 2026, University of Manitoba Robotics Team
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# Created on Aug 3,2026 by Author: Dev Patel, Senay Yemessghen
+
+
+# Launch arguments for the two GPS units, used by gps.launch.py.
+# gps_port      = broadcasts correction data
+# gps_starboard = receives corrections, publishes RELPOSNED for heading_node
+
+gps_port:
+  namespace: gps_port
+  device_family: F9P
+  device_serial_string: GPSP
+  frame_id: gps_port_link
+
+gps_starboard:
+  namespace: gps_starboard
+  device_family: F9P
+  device_serial_string: GPSB
+  frame_id: gps_starboard_link
