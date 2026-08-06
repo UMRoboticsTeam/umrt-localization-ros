@@ -9,6 +9,7 @@ Created on Aug 3,2026 by Author: Dev Patel, Senay Yemessghen
 
 #include "umrt-localization-ros/heading_node.hpp"
 #include <ublox_ubx_msgs/msg/carr_soln.hpp>
+#include "std_msgs/msg/float32.hpp"
 
 #include <cmath>
 #include <string>
@@ -25,6 +26,7 @@ HeadingNode::HeadingNode() : Node("heading_node")
 
     const std::string relpos_topic = this->declare_parameter<std::string>("relpos_topic", "/gps_starboard/ubx_nav_rel_pos_ned");
     relpos_sub = this->create_subscription<ublox_ubx_msgs::msg::UBXNavRelPosNED>(relpos_topic, qos, [this](const ublox_ubx_msgs::msg::UBXNavRelPosNED::SharedPtr msg) {relposCallback(msg);});
+    heading_pub = this->create_publisher<std_msgs::msg::Float32>("/heading", 10);
     
     RCLCPP_INFO(this->get_logger(), "Moving-base RTK heading node initialized.");
 }
@@ -122,6 +124,10 @@ void HeadingNode::relposCallback(const ublox_ubx_msgs::msg::UBXNavRelPosNED::Sha
     else if (heading_angle < 247.5)  heading_dir = "SW";
     else if (heading_angle < 292.5)  heading_dir = "W";
     else if (heading_angle < 337.5)  heading_dir = "NW";
+    
+    std_msgs::msg::Float32 heading_msg;
+    heading_msg.data = static_cast<float>(heading_angle);
+    heading_pub->publish(heading_msg);
 
     RCLCPP_INFO(this->get_logger(), "Heading: %s, angle: %.2f deg, baseline heading: %.2f deg, rel_n: %.3f m, rel_e: %.3f m, len: %.3f m", heading_dir.c_str(), heading_angle, baseline_heading, rel_n, rel_e, baseline_len);
 }

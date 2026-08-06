@@ -12,6 +12,7 @@
   <!-- Package dependencies -->
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
+  <depend>std_msgs</depend>
 
   <!-- Execution dependencies -->
   <exec_depend>ublox_dgnss</exec_depend>

@@ -16,6 +16,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         rclcpp_lifecycle
         ublox_dgnss
         sensor_msgs
+        std_msgs
         )
 
 # find dependencies
@@ -26,7 +27,7 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
 endforeach()
 
 add_executable(heading_node
-    src/heading_main.cpp
+    src/heading.cpp
     src/heading_node.cpp
 )
 
@@ -39,6 +40,7 @@ ament_target_dependencies(heading_node
     rclcpp
     sensor_msgs
     ublox_ubx_msgs
+    std_msgs 
 )
 
 # Parse version number from the file
