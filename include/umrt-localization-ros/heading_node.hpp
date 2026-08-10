@@ -14,6 +14,7 @@ Created on Aug 3,2026 by Author: Dev Patel, Senay Yemessghen
 #include <ublox_ubx_msgs/msg/ubx_nav_rel_pos_ned.hpp>
 #include <string>
 #include "std_msgs/msg/float32.hpp"
+#include "std_msgs/msg/string.hpp"
 
 /**
  * @class HeadingNode
@@ -31,7 +32,9 @@ private:
 
     // Subscription that receives RELPOSNED data from starboard.
     rclcpp::Subscription<ublox_ubx_msgs::msg::UBXNavRelPosNED>::SharedPtr relpos_sub;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr heading_pub;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr heading_angle_pub;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr heading_direction_pub;
+
 
     /**
      * @brief Runs every time a new RELPOSNED message arrives.
